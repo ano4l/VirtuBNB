@@ -1,0 +1,11 @@
+{
+  "title": "VirtuHost — Host operations, made human",
+  "description": "VirtuHost is the calm operating layer for short-term rental hosts.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

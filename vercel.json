@@ -1,12 +1,12 @@
 {
-  "buildCommand": "npm run export:web",
-  "outputDirectory": "dist-vercel",
-  "framework": null,
-  "cleanUrls": true,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @virtuhost/web build",
+  "outputDirectory": "Frontend/dist",
   "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "/"
+      "source": "/((?!assets/).*)",
+      "destination": "/index.html"
     }
   ]
 }
