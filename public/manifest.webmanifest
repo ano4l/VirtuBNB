@@ -1,0 +1,20 @@
+{
+  "name": "VirtuHost",
+  "short_name": "VirtuHost",
+  "description": "A calm mobile companion for managing your hosting day.",
+  "lang": "en-ZA",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F7F8F7",
+  "theme_color": "#176B45",
+  "icons": [
+    {
+      "src": "/pwa-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

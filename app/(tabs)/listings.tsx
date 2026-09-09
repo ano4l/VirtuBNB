@@ -1,0 +1,19 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Eyebrow, Screen, ScreenTitle, StatusDot } from '@/src/components/ui';
+import { useAppState } from '@/src/state/AppState';
+import { colors, radius, spacing } from '@/src/theme';
+import { getPropertyPresentation } from '@/src/selectors';
+
+export default function ListingsScreen() {
+  const { properties, approval, activity } = useAppState();
+  return <Screen><View style={styles.top}><View><Eyebrow>Portfolio</Eyebrow><ScreenTitle>Your listings</ScreenTitle></View><View style={styles.count}><Text style={styles.countText}>{properties.length}</Text></View></View>
+    <Text style={styles.intro}>Your stays, listing health and manual controls in one quiet view.</Text>
+    <View style={styles.list}>{properties.map((property) => { const presentation = getPropertyPresentation(property, approval, activity); return <Pressable key={property.id} accessibilityRole="button" accessibilityLabel={`Open ${property.name}`} onPress={() => router.push(`/property/${property.id}`)} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+      <Image source={property.image} style={styles.image} resizeMode="cover" /><View style={styles.imageShade} /><View style={styles.badge}><StatusDot tone={presentation.syncHealth === 'Healthy' ? 'green' : 'amber'} /><Text style={styles.badgeText}>{property.status}</Text></View>
+      <View style={styles.copy}><View style={styles.titleRow}><View style={styles.flex}><Text style={styles.name}>{property.name}</Text><Text style={styles.area}>{property.area}</Text></View><View style={styles.arrow}><Ionicons name="arrow-forward" size={18} color={colors.ink} /></View></View><Text style={styles.next}>{property.nextStay}</Text><View style={styles.sync}><Ionicons name={presentation.syncHealth === 'Healthy' ? 'checkmark-circle-outline' : 'alert-circle-outline'} size={16} color={presentation.syncHealth === 'Healthy' ? colors.green : colors.amber} /><Text style={[styles.syncText, presentation.syncHealth === 'Attention' && { color: colors.amber }]}>{presentation.syncLabel}</Text></View></View>
+    </Pressable>; })}</View>
+  </Screen>;
+}
+const styles = StyleSheet.create({ top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, count: { width: 42, height: 42, borderRadius: 14, backgroundColor: colors.greenSoft, alignItems: 'center', justifyContent: 'center' }, countText: { color: colors.green, fontSize: 15, fontWeight: '900' }, intro: { color: colors.inkMuted, fontSize: 14, lineHeight: 21, marginTop: 8 }, list: { gap: 18, marginTop: 24 }, card: { borderRadius: radius.xl, backgroundColor: '#fff', overflow: 'hidden', borderWidth: 1, borderColor: colors.line }, image: { width: '100%', height: 190 }, imageShade: { position: 'absolute', top: 0, left: 0, right: 0, height: 80, backgroundColor: 'rgba(10,20,15,0.08)' }, badge: { position: 'absolute', top: 14, left: 14, minHeight: 34, borderRadius: 11, paddingHorizontal: 11, backgroundColor: 'rgba(255,255,255,0.92)', flexDirection: 'row', alignItems: 'center', gap: 7 }, badgeText: { color: colors.ink, fontSize: 11, fontWeight: '800' }, copy: { padding: 17 }, titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 }, flex: { flex: 1 }, name: { color: colors.ink, fontSize: 20, fontWeight: '900', letterSpacing: -0.5 }, area: { color: colors.inkMuted, fontSize: 12, marginTop: 3 }, arrow: { width: 42, height: 42, borderRadius: 14, backgroundColor: colors.surfaceSoft, alignItems: 'center', justifyContent: 'center' }, next: { color: colors.ink, fontSize: 13, lineHeight: 19, marginTop: 15 }, sync: { marginTop: 13, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.line, flexDirection: 'row', alignItems: 'center', gap: 7 }, syncText: { color: colors.green, fontSize: 11, fontWeight: '800' }, pressed: { opacity: 0.82, transform: [{ scale: 0.992 }] } });

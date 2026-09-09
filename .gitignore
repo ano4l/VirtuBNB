@@ -6,6 +6,10 @@ node_modules/
 # Expo
 .expo/
 dist/
+dist-revision/
+dist-vercel/
+dist-round*/
+dist-shared/
 web-build/
 expo-env.d.ts
 
