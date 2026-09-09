@@ -1,13 +1,15 @@
 import React, { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { initialActivity, initialApproval, initialTasks, properties, reviews, timelineEvents } from '@/src/data/demo';
+import { bookings, conversations as initialConversations, initialActivity, initialApproval, initialTasks, properties, reviews, timelineEvents } from '@/src/data/demo';
 import { demoService } from '@/src/services/demoService';
 import { HostApi, HostSnapshot } from '@/src/services/apiService';
-import type { Approval, AssistantMessage, Property, Review } from '@/src/models';
+import type { Approval, AssistantMessage, Booking, Conversation, Property, Review } from '@/src/models';
 
 interface AppStateValue extends HostSnapshot {
   onboardingComplete: boolean;
   reviews: Review[];
+  bookings: Booking[];
+  conversations: Conversation[];
   messages: AssistantMessage[];
   assistantBusy: boolean;
   assistantDraft: string;
@@ -29,6 +31,8 @@ interface AppStateValue extends HostSnapshot {
   setAssistantDraft: (value: string) => void;
   setAssistantReview: (id: string | null) => void;
   sendAssistantMessage: (value: string) => Promise<void>;
+  generateGuestReply: (conversationId: string) => Promise<string>;
+  sendGuestReply: (conversationId: string, value: string) => void;
   stageListingChange: (id: string, changes: Partial<Pick<Property, 'name' | 'description' | 'checkInTime' | 'status' | 'automationEnabled'>>) => void;
 }
 const initial = (): HostSnapshot => JSON.parse(JSON.stringify({ properties, tasks: initialTasks, approvals: [initialApproval], activity: initialActivity, briefing: '', syncedAt: '', timeline: timelineEvents }));
@@ -46,6 +50,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [assistantBusy, setAssistantBusy] = useState(false);
   const [assistantDraft, setAssistantDraft] = useState('');
   const [assistantReviewId, setAssistantReview] = useState<string | null>(null);
+  const [guestConversations, setGuestConversations] = useState<Conversation[]>(initialConversations);
   const api = useRef<HostApi | null>(null);
   const generation = useRef(0);
   const busy = useRef(false);
@@ -175,7 +180,17 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       activity: [{ id: `manual-activity-${Date.now()}`, kind: 'user', title: 'Listing changes staged', detail: `${current.name}: ${summary}. Saved locally, not published.`, time: 'Now' }, ...snapshot.activity],
     })); selectApproval(proposal.id);
   };
-  return <AppStateContext.Provider value={{ ...data, approval, selectApproval, pendingAction, connected, error, refreshing, refresh, connect, disconnect, decideApproval, completeTask, retryActivity, onboardingComplete, reviews, messages, assistantBusy, assistantDraft, assistantReviewId, completeOnboarding: () => setOnboardingComplete(true), replayOnboarding: () => setOnboardingComplete(false), setAssistantDraft, setAssistantReview, sendAssistantMessage, stageListingChange }}>{children}</AppStateContext.Provider>;
+  const generateGuestReply = async (conversationId: string) => {
+    const conversation = guestConversations.find((item) => item.id === conversationId);
+    if (!conversation) return '';
+    setAssistantBusy(true); await new Promise((resolve) => setTimeout(resolve, 650)); setAssistantBusy(false);
+    return `Hi ${conversation.guest.split(' ')[0]}, an earlier check-in at 13:00 is available. I’ll confirm the details with you once it is approved.`;
+  };
+  const sendGuestReply = (conversationId: string, value: string) => {
+    const text = value.trim(); if (!text) return;
+    setGuestConversations((items) => items.map((item) => item.id === conversationId ? { ...item, preview: text, time: 'Now', unread: false, messages: [...item.messages, { id: `host-${Date.now()}`, author: 'host', text, time: 'Now' }] } : item));
+  };
+  return <AppStateContext.Provider value={{ ...data, approval, selectApproval, pendingAction, connected, error, refreshing, refresh, connect, disconnect, decideApproval, completeTask, retryActivity, onboardingComplete, reviews, bookings, conversations: guestConversations, messages, assistantBusy, assistantDraft, assistantReviewId, completeOnboarding: () => setOnboardingComplete(true), replayOnboarding: () => setOnboardingComplete(false), setAssistantDraft, setAssistantReview, sendAssistantMessage, generateGuestReply, sendGuestReply, stageListingChange }}>{children}</AppStateContext.Provider>;
 }
 export function useAppState() {
   const context = useContext(AppStateContext);

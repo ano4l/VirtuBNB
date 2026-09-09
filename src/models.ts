@@ -81,3 +81,14 @@ export interface Activity {
   retryable?: boolean;
   retried?: boolean;
 }
+
+export type BookingStatus = 'Confirmed' | 'In house' | 'Completed';
+export interface Booking {
+  id: string; guest: string; initials: string; propertyId: string; dates: string; nights: number;
+  value: string; status: BookingStatus; checkIn: string; checkOut: string; guests: number; note: string;
+}
+
+export interface GuestMessage { id: string; author: 'guest' | 'host'; text: string; time: string; }
+export interface Conversation {
+  id: string; bookingId: string; guest: string; propertyId: string; preview: string; time: string; unread: boolean; messages: GuestMessage[];
+}

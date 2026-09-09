@@ -8,6 +8,10 @@ import { useAppState } from '@/src/state/AppState';
 import { colors, radius, spacing } from '@/src/theme';
 
 const rows = [
+  { label: 'Calendar', detail: 'Availability, pricing and date actions', icon: 'calendar-outline' as const, route: '/calendar' },
+  { label: 'Insights', detail: 'Revenue and occupancy performance', icon: 'stats-chart-outline' as const, route: '/insights' },
+  { label: 'Tasks', detail: 'Open cleaning and maintenance work', icon: 'checkbox-outline' as const, route: '/tasks' },
+  { label: 'Reviews', detail: 'Guest feedback and response drafts', icon: 'star-outline' as const, route: '/reviews' },
   { label: 'Approvals', detail: 'Review staged listing changes', icon: 'shield-checkmark-outline' as const, route: '/approvals' },
   { label: 'Activity & audit', detail: 'Trace actions and safe failures', icon: 'pulse-outline' as const, route: '/activity' },
   { label: 'Workspace connection', detail: 'Pair or inspect connection health', icon: 'link-outline' as const, route: '/connect' },

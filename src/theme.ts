@@ -1,14 +1,15 @@
 export const colors = {
-  background: '#F5F6F5',
+  background: '#F8F8F6',
   surface: '#FFFFFF',
-  surfaceSoft: '#ECF2EF',
-  ink: '#151A17',
-  inkMuted: '#5C6963',
-  inkFaint: '#839089',
-  line: '#DCE5E0',
-  green: '#176B45',
-  greenDark: '#105438',
-  greenSoft: '#DCEFE5',
+  surfaceSoft: '#F0F0ED',
+  glass: 'rgba(255,255,255,0.88)',
+  ink: '#0F0F0E',
+  inkMuted: '#666663',
+  inkFaint: '#989894',
+  line: '#E6E5E1',
+  green: '#7B6FD4',
+  greenDark: '#5649B6',
+  greenSoft: '#EFECFB',
   amber: '#A76312',
   amberSoft: '#FFF0D6',
   red: '#B33B32',
@@ -30,7 +31,7 @@ export const spacing = {
 export const radius = { sm: 8, md: 14, lg: 20, xl: 24 } as const;
 
 export const shadow = {
-  shadowColor: '#10281D',
+  shadowColor: '#171426',
   shadowOpacity: 0.07,
   shadowRadius: 12,
   shadowOffset: { width: 0, height: 5 },
