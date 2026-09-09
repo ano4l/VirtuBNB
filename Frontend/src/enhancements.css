@@ -12,9 +12,6 @@
 .page-header .header-actions { margin-left: auto; flex: none; }
 .listing-copy { padding: 15px; margin: 0 -8px -10px; border-radius: 18px; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.32) 30%, rgba(0,0,0,.72) 100%); }
 .send-button { width: 40px !important; height: 40px !important; min-width: 40px; display: grid !important; place-items: center; color: #fff !important; background: #5c4db5 !important; box-shadow: 0 4px 12px rgba(76,60,160,.35); }
-.metal-send { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: #5c4db5; box-shadow: 0 4px 12px rgba(76,60,160,.35); }
-.metal-send > * { width: 40px !important; height: 40px !important; }
-.metal-send svg { stroke: #241b55 !important; filter: drop-shadow(0 1px 0 rgba(255,255,255,.45)); }
 .send-button:disabled { opacity: .55; cursor: wait; }
 .pair-input { width: 100%; margin: 8px 0 8px; padding: 14px 15px; border: 1px solid rgba(255,255,255,.25); border-radius: 14px; outline: none; color: #fff; background: rgba(0,0,0,.22); }
 .pair-input::placeholder { color: rgba(255,255,255,.54); }
@@ -25,3 +22,31 @@
 .action-row button:disabled { color: #aaa8a1; box-shadow: none; }
 @media (max-width: 820px) { .app-frame { height: 100dvh; min-height: 100dvh; max-height: 100dvh; overflow: hidden; } .app-main { height: 100%; overflow-y: auto; padding-bottom: 104px; } .ai-page { padding-bottom: 120px; } .ai-composer { padding-bottom: 80px; } .global-settings { top: 13px; right: 18px; } }
 @media (max-width: 480px) { .app-main { padding-bottom: 106px; } .ai-page { padding-bottom: 126px; } .bottom-nav { bottom: 12px; } .global-settings { top: 13px; right: 18px; } }
+
+/* Keep the assistant reachable on a phone and give the composer a soft outer pulse. */
+.ai-composer { position: relative; z-index: 3; }
+.ai-composer > :first-child { border-radius: 21px; box-shadow: 0 0 0 1px rgba(118,104,207,.08), 0 0 22px rgba(118,104,207,.16); animation: composer-pulse 3.8s ease-in-out infinite; }
+.composer { position: relative; z-index: 1; }
+.send-button { width: 40px !important; height: 40px !important; min-width: 40px; display: grid !important; place-items: center; color: #fff !important; background: #5c4db5 !important; border-radius: 50%; box-shadow: 0 4px 12px rgba(76,60,160,.35); }
+@keyframes composer-pulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(118,104,207,.08), 0 0 18px rgba(118,104,207,.12); } 50% { box-shadow: 0 0 0 2px rgba(118,104,207,.22), 0 0 30px rgba(118,104,207,.25); } }
+@media (max-width: 820px) {
+  .ai-page { min-height: calc(100dvh - 1px); padding-bottom: 78px; }
+  .ai-scroll { min-height: 0; }
+  .ai-empty { min-height: 0; padding: 12px 0 22px; }
+  .ai-empty > div:first-child { transform: scale(.82); transform-origin: center; margin: -7px 0 -4px; }
+  .ai-empty h2 { margin: 10px 0 7px; font-size: 24px; }
+  .ai-empty p { margin-bottom: 16px; font-size: 13px; }
+  .ai-composer { position: sticky; bottom: 0; margin: 0 -22px; padding: 8px 22px 10px; background: linear-gradient(180deg, rgba(248,247,244,0), rgba(248,247,244,.94) 22%, rgba(248,247,244,.98)); }
+}
+@media (max-width: 480px) {
+  .ai-page { padding-bottom: 76px; }
+  .ai-composer { margin: 0 -22px; padding-left: 22px; padding-right: 22px; }
+  .suggestion-list { gap: 7px; }
+  .suggestion-list button { padding: 11px 12px; }
+}
+
+/* Standalone phone layouts need to clear the iOS home-indicator area. */
+@media (display-mode: standalone) {
+  .app-stage { min-height: 100dvh; }
+  .bottom-nav { bottom: max(12px, env(safe-area-inset-bottom)); }
+}

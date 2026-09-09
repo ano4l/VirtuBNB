@@ -1,0 +1,13 @@
+{
+  "name": "VirtuHost",
+  "short_name": "VirtuHost",
+  "description": "A calm demo companion for short-term rental hosts.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f7f5",
+  "theme_color": "#f7f7f5",
+  "categories": ["business", "productivity"],
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
