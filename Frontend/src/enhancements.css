@@ -255,6 +255,53 @@ textarea {
   background: var(--vh-glass-fill);
 }
 
+/* Put the business pulse before the booking list so the home screen reads in the intended order. */
+.page-home {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-home .quick-row {
+  margin-bottom: 24px;
+}
+
+.page-home .home-footer {
+  order: 6;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 34px;
+  padding: 0;
+  border-top: 0;
+}
+
+.page-home .home-footer button {
+  min-height: 92px;
+  padding: 16px;
+  border: 1px solid var(--vh-glass-border);
+  border-radius: 20px;
+  background: var(--vh-glass-fill);
+  box-shadow: 0 12px 30px rgba(29, 35, 39, .06), inset 0 1px 0 rgba(255, 255, 255, .9);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+}
+
+.page-home .today-section {
+  order: 7;
+}
+
+@media (max-width: 480px) {
+  .page-home .home-footer {
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .page-home .home-footer button {
+    min-height: 88px;
+    padding: 14px 12px;
+  }
+}
+
 .status.accent,
 .command-mic,
 .secondary-button,
