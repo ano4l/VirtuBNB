@@ -110,8 +110,10 @@
 /* The assistant opens on its useful control; examples and history follow it. */
 .ai-page { padding-bottom: 32px; }
 .ai-scroll { min-height: 0; overflow: visible; }
-.ai-composer-top { order: 0; position: sticky; top: 0; padding: 8px 0 12px; background: linear-gradient(180deg, #f8f8f6 72%, rgba(248,248,246,0)); }
+.ai-page { height: 100%; overflow: hidden; padding-bottom: 32px; }
+.ai-composer-top { order: 2; position: relative; top: auto; bottom: auto; flex: none; padding: 12px 0 8px; margin-top: auto; background: linear-gradient(0deg, #f8f8f6 72%, rgba(248,248,246,0)); }
 .ai-composer-top + .ai-scroll { order: 1; }
+.ai-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 .ai-empty { min-height: 0; padding: 28px 0 34px; justify-content: flex-start; }
 .ai-empty h2 { margin-top: 12px; }
 .ai-empty > p { margin-bottom: 16px; }
@@ -138,7 +140,8 @@
   .setup-header { min-height: 78px; }
   .setup-main { margin: 0; padding: 24px 0 44px; }
   .setup-progress { margin-bottom: 34px; }
-  .ai-composer-top { margin: 0 -22px; padding: 8px 22px 12px; }
+  .ai-page { height: 100%; padding-bottom: 122px; }
+  .ai-composer-top { margin: 0 -22px; padding: 8px 22px 10px; background: linear-gradient(0deg, rgba(248,248,246,.98), rgba(248,248,246,.94) 72%, rgba(248,248,246,0)); }
 }
 @media (max-width: 480px) {
   .auth-welcome-actions { display: grid; gap: 8px; }
