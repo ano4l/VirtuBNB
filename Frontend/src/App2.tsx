@@ -11,7 +11,7 @@ type AiMessage = { id: number; role: "user" | "ai"; text: string; card?: "early-
 type AuthView = "welcome" | "sign-in" | "sign-up" | "onboarding";
 type OnboardingStep = 1 | 2 | 3;
 
-const ACCENT = "#7668cf"; const MUTED = "#777773";
+const ACCENT = "#5d7882"; const MUTED = "#656a70";
 const photos = { sandton: "https://images.unsplash.com/photo-1564078516393-cf04bd966897?w=1200&h=900&fit=crop&auto=format", rosebank: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200&h=900&fit=crop&auto=format", hero: "https://images.unsplash.com/photo-1630699144035-c0f6311ec482?w=1600&h=1800&fit=crop&auto=format", living: "https://images.unsplash.com/photo-1757924461488-ef9ad0670978?w=900&h=900&fit=crop&auto=format", bedroom: "https://images.unsplash.com/photo-1696762932825-2737db830bbe?w=900&h=900&fit=crop&auto=format" };
 const propertyPresentation = (propertyId: string) => propertyId.includes("rose") ? { name: "Rosebank Designer Loft", photo: photos.rosebank } : propertyId.includes("melrose") ? { name: "Melrose Penthouse", photo: photos.hero } : { name: "Sandton City Apartment", photo: photos.sandton };
 const draftForConversation = (conversation: Conversation) => conversation.guestName === "Sarah Mitchell" ? "Hi Sarah — I can offer an earlier 13:00 check-in. I’ll send updated instructions once you confirm." : conversation.guestName === "Michael Chen" ? "Hi Michael — thank you for staying with us. I’m glad the check-out went smoothly." : conversation.guestName === "Lerato Mokoena" ? "Hi Lerato — yes, parking is available for up to two cars. I can share the access details before arrival." : `Hi ${conversation.guestName.split(" ")[0]} — we’re looking forward to hosting you. I’ll share the arrival details before check-in.`;
