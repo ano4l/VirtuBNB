@@ -18,6 +18,10 @@ class RecordingTransport implements WhatsAppTransport {
 const config: AppConfig = {
   NODE_ENV: "test",
   PORT: 4100,
+  PROPERTY_PROVIDER: "fake",
+  AI_PROVIDER: "disabled",
+  OPENAI_MODEL: "gpt-5.6-luna",
+  OPENAI_REASONING_EFFORT: "low",
   WHATSAPP_VERIFY_TOKEN: "test-verify-token",
   WHATSAPP_TRANSPORT: "demo",
   META_APP_SECRET: "test-app-secret",
@@ -168,6 +172,19 @@ describe("VirtuHost API", () => {
     await command("Change Rosebank Loft check-in to 25:00");
     await command("Change Rosebank Loft and Sandton Studio check-in to 15:00");
     assert.equal(store.approvals.length, count);
+  });
+
+  it("uses one authenticated command route for the web control plane", async () => {
+    const { app, store } = createApp(config);
+    const response = await request(app)
+      .post("/api/commands")
+      .set("authorization", `Bearer ${config.HOST_API_TOKEN}`)
+      .send({ text: "Block Rosebank Loft tomorrow" });
+    assert.equal(response.status, 201);
+    assert.equal(response.body.source, "unavailable");
+    assert.equal(response.body.command.status, "planner_unavailable");
+    assert.equal(store.agentCommands.length, 1);
+    assert.equal((await request(app).post("/api/commands").send({ text: "TODAY" })).status, 401);
   });
 
   it("refuses expired and already-decided approvals", () => {

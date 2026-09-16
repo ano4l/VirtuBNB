@@ -3,6 +3,9 @@ import cors from "cors";
 import { timingSafeEqual } from "node:crypto";
 import type { AppConfig } from "./config.js";
 import { CommandEngine } from "./agent/command-engine.js";
+import { AgentOrchestrator } from "./agent/orchestrator.js";
+import type { LlmClient } from "./ai/llm-client.js";
+import { OpenAiLunaClient } from "./ai/openai-luna-client.js";
 import { SqliteStore } from "./store/sqlite-store.js";
 import { extractMessages, type WhatsAppInboundMessage } from "./whatsapp/types.js";
 import { verifyMetaSignature } from "./whatsapp/signature.js";
@@ -22,6 +25,7 @@ const dateParam = (offset: number) => {
 export type AppDependencies = {
   store?: SqliteStore;
   transport?: WhatsAppTransport;
+  llmClient?: LlmClient;
 };
 
 function makeTransport(config: AppConfig): WhatsAppTransport {
@@ -35,6 +39,11 @@ function makeTransport(config: AppConfig): WhatsAppTransport {
   return new DemoWhatsAppTransport();
 }
 
+function makeLlmClient(config: AppConfig): LlmClient | undefined {
+  if (config.AI_PROVIDER !== "openai") return undefined;
+  return new OpenAiLunaClient(config.OPENAI_API_KEY!, config.OPENAI_MODEL, config.OPENAI_REASONING_EFFORT);
+}
+
 export function createApp(
   config: AppConfig,
   dependencies: AppDependencies = {},
@@ -43,6 +52,7 @@ export function createApp(
   const store = dependencies.store ?? new SqliteStore(config.DATABASE_PATH);
   const transport = dependencies.transport ?? makeTransport(config);
   const engine = new CommandEngine(store);
+  const orchestrator = new AgentOrchestrator(store, dependencies.llmClient ?? makeLlmClient(config));
   const sending = new Map<string, Promise<boolean>>();
   const deliver = (key: string): Promise<boolean> => {
     const current = sending.get(key);
@@ -127,7 +137,7 @@ export function createApp(
   app.use(express.json({ limit: "1mb" }));
 
   app.get("/health", (_request, response) => {
-    response.json({ status: "ok", transport: config.WHATSAPP_TRANSPORT });
+    response.json({ status: "ok", transport: config.WHATSAPP_TRANSPORT, planner: config.AI_PROVIDER, provider: config.PROPERTY_PROVIDER });
   });
 
   const pairingAttempts = new Map<string, { count: number; expires: number }>();
@@ -166,9 +176,38 @@ export function createApp(
   app.get("/api/snapshot", (_request, response) => response.json({
     properties: store.properties, tasks: store.tasks, approvals: store.approvals, activities: store.activities,
     bookings: store.bookings, conversations: store.conversations, messages: store.messages, listings: store.listings,
-    calendar: store.calendar, insights: store.insights, previewActions: store.previewActions,
-    dashboard: store.getDashboard(), delivery: store.deliverySummary(), mode: "demo-data", syncedAt: new Date().toISOString(),
+    calendar: store.calendar, insights: store.insights, previewActions: store.previewActions, agentCommands: store.agentCommands,
+    dashboard: store.getDashboard(), delivery: store.deliverySummary(), mode: "development-control-plane", syncedAt: new Date().toISOString(),
   }));
+
+  app.get("/api/platform-status", (_request, response) => response.json({
+    planner: config.AI_PROVIDER === "openai" ? { status: "ready", model: config.OPENAI_MODEL } : { status: "not_configured" },
+    browserExecutor: { status: "not_configured" },
+    whatsapp: { status: config.WHATSAPP_TRANSPORT === "cloud" ? "configured" : "not_configured" },
+    mode: "development-control-plane",
+  }));
+
+  app.post("/api/commands", async (request, response) => {
+    const text = request.body?.text;
+    if (typeof text !== "string" || text.trim().length < 1 || text.length > 4096) {
+      response.status(400).json({ error: "Provide a command of 1 to 4096 characters." });
+      return;
+    }
+    const deterministic = engine.handle({ id: "web-command", from: "web", timestamp: String(Date.now()), type: "text", text: { body: text.trim() } });
+    if (!deterministic.startsWith("I did not recognize that request yet.")) {
+      const command = store.transaction(() => store.recordAgentCommand({ instruction: text.trim(), source: "deterministic", status: "answered" }));
+      response.status(201).json({ reply: deterministic, source: "deterministic", command });
+      return;
+    }
+    const result = await orchestrator.interpret(text.trim());
+    const command = store.transaction(() => store.recordAgentCommand({
+      instruction: text.trim(),
+      source: result.source,
+      status: result.proposal ? "proposed" : result.source === "unavailable" ? "planner_unavailable" : "answered",
+      ...(result.proposal ? { proposal: result.proposal as Readonly<Record<string, unknown>> } : {}),
+    }));
+    response.status(201).json({ ...result, command });
+  });
 
   app.post("/api/demo/command", (request, response) => {
     if (config.WHATSAPP_TRANSPORT !== "demo") { response.sendStatus(404); return; }

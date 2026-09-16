@@ -4,7 +4,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { MemoryStore } from "./memory-store.js";
 
-type Snapshot = Pick<MemoryStore, "properties" | "tasks" | "approvals" | "activities" | "bookings" | "conversations" | "messages" | "listings" | "calendar" | "insights" | "previewActions">;
+type Snapshot = Pick<MemoryStore, "properties" | "tasks" | "approvals" | "activities" | "bookings" | "conversations" | "messages" | "listings" | "calendar" | "insights" | "previewActions" | "agentCommands">;
 type Reply = { key: string; recipient: string; body: string; delivered: number; attempts: number; created: number; lease_until: number };
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 
@@ -32,7 +32,7 @@ export class SqliteStore extends MemoryStore {
     return {
       properties: this.properties, tasks: this.tasks, approvals: this.approvals, activities: this.activities,
       bookings: this.bookings, conversations: this.conversations, messages: this.messages, listings: this.listings,
-      calendar: this.calendar, insights: this.insights, previewActions: this.previewActions,
+      calendar: this.calendar, insights: this.insights, previewActions: this.previewActions, agentCommands: this.agentCommands,
     };
   }
 
@@ -40,7 +40,7 @@ export class SqliteStore extends MemoryStore {
     const row = this.db.prepare("SELECT version, data FROM workspace WHERE id=1").get();
     if (!row || row.version !== 1) throw new Error("Unsupported workspace schema");
     const data = JSON.parse(String(row.data)) as Snapshot;
-    for (const name of ["properties", "tasks", "approvals", "activities", "bookings", "conversations", "messages", "listings", "calendar", "insights", "previewActions"] as const) {
+    for (const name of ["properties", "tasks", "approvals", "activities", "bookings", "conversations", "messages", "listings", "calendar", "insights", "previewActions", "agentCommands"] as const) {
       // Older workspace snapshots predate the demo booking domain. Keep the
       // freshly seeded values for absent fields and migrate them on next write.
       if (data[name] === undefined) continue;

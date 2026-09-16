@@ -24,7 +24,7 @@ describe("actual-app demo domain", () => {
     assert.ok(response.body.listings.some((item: { id: string }) => item.id === "listing_sandton"));
     assert.ok(response.body.calendar.length > 0);
     assert.ok(response.body.insights.length > 0);
-    assert.deepEqual(response.body.mode, "demo-data");
+    assert.deepEqual(response.body.mode, "development-control-plane");
   });
 
   it("supports booking filters, details and safe booking action previews", async () => {

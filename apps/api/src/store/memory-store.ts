@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type {
-  Activity, Approval, Booking, CalendarDay, Conversation, Dashboard, Insight, Listing, Message,
+  Activity, AgentCommand, Approval, Booking, CalendarDay, Conversation, Dashboard, Insight, Listing, Message,
   PreviewAction, Property, RatePreview, Task,
 } from "../domain/types.js";
 
@@ -168,6 +168,7 @@ export class MemoryStore {
   ];
 
   readonly previewActions: PreviewAction[] = [];
+  readonly agentCommands: AgentCommand[] = [];
 
   constructor() {
     for (let offset = -3; offset < 45; offset += 1) {
@@ -191,6 +192,19 @@ export class MemoryStore {
       openTasks: this.tasks.filter((task) => task.status !== "completed").length,
       pendingApprovals: pending,
     };
+  }
+
+  recordAgentCommand(command: Omit<AgentCommand, "id" | "createdAt">): AgentCommand {
+    const record: AgentCommand = { id: randomUUID(), createdAt: new Date().toISOString(), ...command };
+    this.agentCommands.unshift(record);
+    this.activities.unshift({
+      id: randomUUID(),
+      type: command.status === "planner_unavailable" ? "failure" : "user",
+      title: command.status === "proposed" ? "Agent proposal created" : "Agent command received",
+      detail: command.status === "proposed" ? "Awaiting the connected browser-execution workflow." : "No external action was attempted.",
+      occurredAt: record.createdAt,
+    });
+    return record;
   }
 
   getBookings(filters: { status?: Booking["status"]; from?: string; to?: string } = {}): Booking[] {

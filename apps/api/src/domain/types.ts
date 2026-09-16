@@ -159,3 +159,137 @@ export type PreviewAction = {
   createdAt: string;
   expiresAt: string;
 };
+
+/** Durable command intake shape. In development it is stored in SQLite; the
+ * production PostgreSQL repository will use the same contract. */
+export type AgentCommand = {
+  id: string;
+  instruction: string;
+  source: "deterministic" | "gpt-5.6-luna" | "unavailable";
+  status: "answered" | "proposed" | "planner_unavailable";
+  proposal?: Readonly<Record<string, unknown>>;
+  createdAt: string;
+};
+
+/** Provider-neutral production domain. The existing types above remain the
+ * demo contract until the API routes are migrated onto repositories. */
+export type ProviderName = "nextpax" | "fake";
+export type BookingChannel = "airbnb" | "booking_com" | "vrbo" | "direct" | "other";
+
+export type Organization = {
+  id: string;
+  name: string;
+  status: "active" | "suspended";
+  createdAt: string;
+};
+
+export type User = {
+  id: string;
+  organizationId: string;
+  displayName: string;
+  role: "owner" | "manager" | "operations" | "service_provider";
+  status: "active" | "disabled";
+};
+
+export type IntegrationConnection = {
+  id: string;
+  organizationId: string;
+  provider: ProviderName;
+  status: "pending" | "active" | "degraded" | "disconnected";
+  externalAccountId?: string;
+  capabilitiesCheckedAt?: string;
+  lastSuccessfulSyncAt?: string;
+};
+
+export type ListingMapping = {
+  id: string;
+  organizationId: string;
+  connectionId: string;
+  propertyId: string;
+  channel: BookingChannel;
+  externalPropertyId: string;
+  externalListingId?: string;
+  externalUnitId?: string;
+  status: "pending" | "active" | "error" | "disconnected";
+};
+
+export type ReservationRecord = {
+  id: string;
+  organizationId: string;
+  connectionId: string;
+  propertyId: string;
+  channel: BookingChannel;
+  externalReservationId: string;
+  status: "inquiry" | "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
+  checkIn: string;
+  checkOut: string;
+  guestCount: number;
+  currency: string;
+  totalAmount?: number;
+  currentRevision: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ReservationRevision = {
+  id: string;
+  organizationId: string;
+  reservationId: string;
+  providerRevisionId: string;
+  revision: number;
+  eventKind: "created" | "modified" | "cancelled" | "reconciled";
+  snapshot: Readonly<Record<string, unknown>>;
+  receivedAt: string;
+};
+
+export type InboundProviderEvent = {
+  id: string;
+  organizationId: string;
+  connectionId: string;
+  provider: ProviderName;
+  providerEventId: string;
+  eventType: string;
+  payloadHash: string;
+  status: "received" | "processing" | "processed" | "retryable" | "quarantined";
+  attempts: number;
+  receivedAt: string;
+  processedAt?: string;
+};
+
+export type OutboundProviderCommand = {
+  id: string;
+  organizationId: string;
+  connectionId: string;
+  proposalId?: string;
+  idempotencyKey: string;
+  kind: "send_guest_message" | "upsert_rates" | "upsert_availability" | "upsert_listing_content" | "modify_reservation";
+  payload: Readonly<Record<string, unknown>>;
+  status: "pending" | "dispatching" | "accepted" | "confirmed" | "retryable" | "dead_letter" | "rejected";
+  attempts: number;
+  createdAt: string;
+  confirmedAt?: string;
+};
+
+export type ProviderConfirmation = {
+  id: string;
+  organizationId: string;
+  commandId: string;
+  providerReference?: string;
+  status: "pending" | "confirmed" | "rejected" | "mismatch";
+  receivedAt: string;
+  details?: Readonly<Record<string, unknown>>;
+};
+
+export type AuditEventRecord = {
+  id: string;
+  organizationId: string;
+  actorType: "user" | "automation" | "provider" | "system";
+  actorId?: string;
+  action: string;
+  subjectType: string;
+  subjectId: string;
+  correlationId: string;
+  outcome: "proposed" | "approved" | "rejected" | "attempted" | "confirmed" | "failed";
+  metadata: Readonly<Record<string, unknown>>;
+  occurredAt: string;
+};

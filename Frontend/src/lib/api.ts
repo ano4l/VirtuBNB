@@ -11,7 +11,8 @@ export type Task = { id: string; propertyId: string; title: string; dueLabel: st
 export type Approval = { id: string; code: string; propertyId: string; kind: "listing_text" | "listing_photo"; field: string; before: string; after: string; requestedBy: "whatsapp" | "mobile"; status: "pending" | "approved" | "rejected"; createdAt: string; expiresAt: string };
 export type Activity = { id: string; type: "user" | "automation" | "sync" | "failure"; title: string; detail: string; occurredAt: string; retryable?: boolean };
 export type Dashboard = { briefing: string; whatsappConnected: boolean; arrivals: number; departures: number; openTasks: number; pendingApprovals: number };
-export type Snapshot = { properties: Property[]; tasks: Task[]; approvals: Approval[]; activities: Activity[]; bookings?: Booking[]; conversations?: Conversation[]; listings?: Listing[]; calendar?: CalendarDay[]; insights?: Insight[]; previewActions?: PreviewAction[]; dashboard: Dashboard; delivery?: { pending: number; failed: number }; mode: string; syncedAt: string };
+export type AgentCommand = { id: string; instruction: string; source: "deterministic" | "gpt-5.6-luna" | "unavailable"; status: "answered" | "proposed" | "planner_unavailable"; createdAt: string };
+export type Snapshot = { properties: Property[]; tasks: Task[]; approvals: Approval[]; activities: Activity[]; bookings?: Booking[]; conversations?: Conversation[]; listings?: Listing[]; calendar?: CalendarDay[]; insights?: Insight[]; previewActions?: PreviewAction[]; agentCommands?: AgentCommand[]; dashboard: Dashboard; delivery?: { pending: number; failed: number }; mode: string; syncedAt: string };
 export type Booking = { id: string; propertyId: string; guestName: string; channel: "Airbnb"; status: string; checkIn: string; checkOut: string; guests: number; nights: number; total: number; currency: "ZAR"; checkInInstructionsSent: boolean };
 export type Conversation = { id: string; bookingId?: string; propertyId: string; guestName: string; channel: "Airbnb" | "WhatsApp"; unreadCount: number; lastMessageAt: string; lastMessagePreview: string };
 export type Listing = { id: string; propertyId: string; title: string; description: string; location: string; status: "active" | "inactive"; nightlyRate: number; weekendRate: number; cleaningFee: number; minimumStay: number; occupancy: number; monthlyRevenue: number; rating: number; reviewCount: number; photos: string[]; amenities: string[]; checkInTime: string; checkOutTime: string; lastSyncedAt: string };
@@ -19,6 +20,12 @@ export type CalendarDay = { date: string; propertyId: string; status: "available
 export type Insight = { id: string; kind: "pricing" | "occupancy" | "revenue"; title: string; body: string; metric: string; change?: string; recommendation: string; status: string; createdAt: string };
 export type PreviewAction = { id: string; kind: string; title: string; summary: string; status: "pending" | "approved" | "rejected"; destructive: boolean; createdAt: string; expiresAt: string };
 export type RatePreview = { propertyId: string; from: string; to: string; nights: number; nightlyRate: number; total: number; currency: "ZAR"; reason: "base" | "weekend" | "preview" };
+export type PlatformStatus = {
+  planner: { status: "ready"; model: "gpt-5.6-luna" } | { status: "not_configured" };
+  browserExecutor: { status: "not_configured" | "ready" };
+  whatsapp: { status: "not_configured" | "configured" };
+  mode: string;
+};
 
 const base = ((import.meta.env.VITE_API_URL as string | undefined) ?? (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "").replace(/\/$/, "");
 const SESSION_KEY = "virtuhost.session";
@@ -47,6 +54,7 @@ async function request<T>(path: string, init: RequestInit = {}) {
 export const api = {
   pair: async (code: string) => { const value = await request<{ token: string; expiresAt: string }>("/auth/pair", { method: "POST", body: JSON.stringify({ code }) }); saveSession(value.token); return value; },
   snapshot: () => request<Snapshot>("/api/snapshot"),
+  platformStatus: () => request<PlatformStatus>("/api/platform-status"),
   bookings: (status?: string) => request<{ data: Booking[] }>(`/api/bookings${status ? `?status=${encodeURIComponent(status)}` : ""}`),
   booking: (id: string) => request<Booking & { property?: Property; conversation?: Conversation }>(`/api/bookings/${id}`),
   bookingAction: (id: string, action: string) => request<PreviewAction>(`/api/bookings/${id}/action`, { method: "POST", body: JSON.stringify({ action }) }),
@@ -66,6 +74,6 @@ export const api = {
   completeTask: (id: string) => request<Task>(`/api/tasks/${id}/complete`, { method: "POST" }),
   decideApproval: (id: string, decision: "approved" | "rejected") => request<Approval>(`/api/approvals/${id}/decision`, { method: "POST", body: JSON.stringify({ decision }) }),
   retryActivity: (id: string) => request<Activity>(`/api/activity/${id}/retry`, { method: "POST" }),
-  demoCommand: (text: string) => request<{ reply: string }>("/api/demo/command", { method: "POST", body: JSON.stringify({ text }) }),
+  command: (text: string) => request<{ reply: string; source: AgentCommand["source"]; command: AgentCommand }>("/api/commands", { method: "POST", body: JSON.stringify({ text }) }),
   revoke: () => request<void>("/api/session", { method: "DELETE" }),
 };
